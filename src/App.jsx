@@ -3,6 +3,8 @@ import EncounterViewport from "./components/EncounterViewport";
 import { useCallback, useEffect, useState } from "react";
 import config from "./config";
 import tokenImage from "./assets/cleric.png"
+import { v4 as uuidv4 } from 'uuid';
+import { EncounterProvider } from "./encounter-context";
 
 function App() {
   const calculateCanvasSize = () => {
@@ -27,6 +29,7 @@ function App() {
     setObjects(prevObjects => [
       ...prevObjects,
       {
+        id: uuidv4(),
         image: tokenImage,
         x: 0,
         y: 0
@@ -55,8 +58,12 @@ function App() {
         backgroundColor:
           "#03191E"
       }}>
-        <EncounterViewport objects={objects} />
+        <EncounterProvider >
+          <EncounterViewport objects={objects} />
+        </EncounterProvider>
+
       </Stage>
+
     </div>
   );
 }

@@ -14,7 +14,6 @@ function App() {
   };
 
   const [canvasSize, setCanvasSize] = useState(calculateCanvasSize);
-  const [objects, setObjects] = useState([]);
 
   const [showGrid, setShowGrid] = useState(config.mapState.showGrid);
 
@@ -23,18 +22,8 @@ function App() {
       config.mapState.showGrid = !prevShowGrid;
       return !prevShowGrid;
     });
-  };
 
-  const addObject = () => {
-    setObjects(prevObjects => [
-      ...prevObjects,
-      {
-        id: uuidv4(),
-        image: tokenImage,
-        x: 0,
-        y: 0
-      }
-    ]);
+
   };
 
   const updateCanvasSize = useCallback(() => {
@@ -42,7 +31,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    addObject();
     window.addEventListener("resize", updateCanvasSize);
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, [updateCanvasSize]);
@@ -50,8 +38,6 @@ function App() {
   return (
     <div>
       <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)", zIndex: 10 }}>
-        <button onClick={addObject} style={{ margin: "0 5px" }}>Add Object</button>
-        <button onClick={() => setObjects([])} style={{ margin: "0 5px" }}>Clear Objects</button>
         <button onClick={() => toggleGrid()} style={{ margin: "0 5px" }}>{config.mapState.showGrid ? "Hide Grid" : "Show Grid"}</button>
       </div>
       <Stage width={canvasSize.width} height={canvasSize.height} options={{
@@ -59,11 +45,9 @@ function App() {
           "#03191E"
       }}>
         <EncounterProvider >
-          <EncounterViewport objects={objects} />
+          <EncounterViewport />
         </EncounterProvider>
-
       </Stage>
-
     </div>
   );
 }

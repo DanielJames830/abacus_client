@@ -5,20 +5,20 @@ const EncounterContext = createContext();
 export const EncounterProvider = ({ children }) => {
     const [controllerState, setControllerState] = useState({
         selectedEntity: null,
+        isMoving: false,
     });
 
     const [currentZoom, setCurrentZoom] = useState(1);
-    const [isMoving, setIsMoving] = useState(false);
+    const [mapLoaded, setMapLoaded] = useState(false);
 
     const [mapState, setMapState] = useState({
-
         tileSize: 0,
         showGrid: true,
         snapToGrid: true,
     })
 
     return (
-        <EncounterContext.Provider value={{ controllerState, setControllerState, mapState, setMapState, currentZoom, setCurrentZoom, isMoving, setIsMoving }}>
+        <EncounterContext.Provider value={{ controllerState, setControllerState, mapState, setMapState, currentZoom, setCurrentZoom, mapLoaded, setMapLoaded }}>
             {children}
         </EncounterContext.Provider>
     );

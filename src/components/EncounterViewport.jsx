@@ -2,15 +2,19 @@ import { useRef, useEffect, useState } from "react";
 import { Stage, Container, Sprite } from "@pixi/react";
 import '@pixi/events';
 import Token from "./Token";
-
+import { useEncounterContext } from "../encounter-context";
 import config from "../config";
 import Map from "./Map";
 
-const EncounterViewport = ({ objects }) => {
+const EncounterViewport = ({ }) => {
     const [position, setPosition] = useState({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
     const [dragging, setDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
     const [encounter, setEncounter] = useState(null);
+
+    const [entities, setEntities] = useState([]);
+
+    const { controllerState, setControllerState, mapLoaded } = useEncounterContext();
 
     const onWheel = (e) => {
         e.preventDefault();
@@ -44,15 +48,16 @@ const EncounterViewport = ({ objects }) => {
     }, [position]);
 
     const onPointerDown = (e) => {
-        if (!config.mapState.isMoving) {
-            config.mapState.isMoving = true;
+        if (!controllerState.isMoving) {
+
             setDragging(true);
             dragStart.current = { x: e.global.x - position.x, y: e.global.y - position.y };
         }
     };
 
     const onPointerMove = (e) => {
-        if (dragging) {
+        if (!controllerState.isMoving && dragging) {
+            setControllerState(prev => ({ ...prev, selectedEntity: null }));
             setPosition({
                 x: e.global.x - dragStart.current.x,
                 y: e.global.y - dragStart.current.y,
@@ -61,7 +66,6 @@ const EncounterViewport = ({ objects }) => {
     };
 
     const onPointerUp = () => {
-        config.mapState.isMoving = false;
         setDragging(false);
     };
 
@@ -80,8 +84,9 @@ const EncounterViewport = ({ objects }) => {
                 }
 
                 const data = await response.json();
-                console.log("Found encounter: ", data);
+                console.log("Found encounter:", data);
                 setEncounter(data);
+                setEntities(data.entities);
             } catch (error) {
                 console.error('Error fetching encounter:', error);
             }
@@ -89,6 +94,9 @@ const EncounterViewport = ({ objects }) => {
 
         fetchEncounter();
     }, []);
+
+
+
 
     return (
         <Container
@@ -100,10 +108,9 @@ const EncounterViewport = ({ objects }) => {
             pointerup={onPointerUp}
             pointerupoutside={onPointerUp}
         >
-            {/* Only render the Map if encounter is loaded */}
-            {encounter && <Map mapId={encounter.mapId} anchor={0.5} />}
+            {encounter && <Map mapId={encounter.mapId} anchor={0} />}
 
-            {objects.map((obj, index) => (
+            {mapLoaded && entities.map((obj, index) => (
                 <Token key={index} entity={obj} />
             ))}
         </Container>

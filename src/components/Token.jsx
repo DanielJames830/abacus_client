@@ -1,21 +1,30 @@
-import { Sprite, Container, Text } from '@pixi/react';
+import { Sprite, Container, Graphics } from '@pixi/react';
 import { DropShadowFilter } from '@pixi/filter-drop-shadow';
-import { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import '@pixi/events';
 import config from "../config";
 import { useEncounterContext } from '../encounter-context';
 
+
 const Token = ({ entity }) => {
-    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [position, setPosition] = useState({ x: entity.x * config.mapState.tileSize, y: entity.y * config.mapState.tileSize });
     const dragging = useRef(false);
     const dragStart = useRef({ x: 0, y: 0 });
     const { controllerState, setControllerState } = useEncounterContext();
+    const [isLoaded, setIsLoaded] = useState(false);
 
     const onPointerDown = (e) => {
-        setControllerState(prev => ({ ...prev, selectedEntity: entity }));
 
-        if (!config.mapState.isMoving) {
-            config.mapState.isMoving = true;
+        setControllerState(prev => {
+            console.log("Setting selected entity:", entity);
+            console.log("Previous state:", prev);
+            console.log("New state:", { ...prev, selectedEntity: entity });
+            return ({ ...prev, selectedEntity: entity });
+        });
+
+
+        if (!controllerState.isMoving) {
+            setControllerState(prev => ({ ...prev, isMoving: true }));
             dragging.current = true;
 
             const zoom = config.mapState.currentZoom || 1;
@@ -28,18 +37,20 @@ const Token = ({ entity }) => {
     };
 
     const onPointerMove = (e) => {
-        if (dragging.current) {
+
+        if (controllerState.isMoving && dragging.current) {
             const zoom = config.mapState.currentZoom || 1;
 
             setPosition({
                 x: (e.global.x / zoom) - dragStart.current.x,
                 y: (e.global.y / zoom) - dragStart.current.y,
             });
-        }
-    };
+        };
+    }
 
     const onPointerUp = () => {
-        config.mapState.isMoving = false;
+
+        setControllerState(prev => ({ ...prev, isMoving: false }));
         dragging.current = false;
 
         if (config.mapState.snapToGrid) {
@@ -50,34 +61,73 @@ const Token = ({ entity }) => {
         }
     };
 
-    const isSelected = controllerState.selectedEntity?.id === entity.id;
+    useEffect(() => {
+        setIsLoaded(true);
+    })
 
+
+    const isSelected = controllerState.selectedEntity?.id === entity.id;
+    const maskRef = useRef();
     return (
-        <Container>
-            <Sprite
-                image={entity.image}
-                x={position.x}
-                y={position.y - (isSelected ? 5 : 0)}
-                height={config.mapState.tileSize}
-                width={config.mapState.tileSize}
-                interactive
-                cursor={!isSelected ? "pointer" : config.mapState.isMoving ? "grabbing" : "default"}
-                pointerdown={onPointerDown}
-                onglobalpointermove={onPointerMove}
-                pointerup={onPointerUp}
-                pointerupoutside={onPointerUp}
-                anchor={1}
-                filters={isSelected ? [
-                    new DropShadowFilter({
-                        color: 0x000000,
-                        alpha: 0.8,
-                        blur: 0,
-                        distance: 20,
-                        offset: { x: 0, y: 5 }
-                    }),
-                ] : []}
+        <Container filters={isSelected ? [
+            new DropShadowFilter({
+                color: 0x000000,
+                alpha: 0.8,
+                blur: 0,
+                distance: 20,
+                offset: { x: 0, y: 5 }
+            }),] : []}
+            x={position.x}
+            y={position.y - (isSelected ? 5 : 0)}
+            interactive
+            cursor={!isSelected ? "pointer" : controllerState.isMoving ? "grabbing" : "grab"}
+            pointerdown={onPointerDown}
+            onglobalpointermove={onPointerMove}
+            pointerup={onPointerUp}
+            pointerupoutside={onPointerUp}
+            height={config.mapState.tileSize}
+            width={config.mapState.tileSize}>
+
+
+
+            <Graphics
+                name={"mask"}
+                preventRedraw={true}
+                draw={(g) => {
+                    g.clear();
+                    g.beginFill(0x000000, 0.5);
+                    g.drawCircle(config.mapState.tileSize / 2,
+                        config.mapState.tileSize / 2,
+                        (config.mapState.tileSize / 2) * 0.9);
+                    g.endFill();
+                }}
+                ref={maskRef}
             />
-        </Container>
+
+            <Graphics
+                name={"frame"}
+                preventRedraw={true}
+                draw={(g) => {
+                    g.clear();
+                    g.beginFill((isSelected ? 0xDF0000 : 0xe1e1e1), 1);
+                    g.drawCircle(config.mapState.tileSize / 2, config.mapState.tileSize / 2, config.mapState.tileSize / 2);
+                    g.endFill();
+                }}
+
+            />
+
+            <Sprite
+                mask={maskRef.current}
+                image={entity.image}
+
+                height={config.mapState.tileSize * 0.9}
+                width={config.mapState.tileSize * 0.9}
+
+                anchor={-0.06}
+
+            />
+
+        </Container >
     );
 };
 

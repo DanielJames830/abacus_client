@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import { Container, Sprite } from "@pixi/react";
 import Grid from "./Grid";
 import config from "../config";
+import { useEncounterContext } from "../encounter-context";
 
 const Map = ({ mapId }) => {
     const [map, setMap] = useState(null);
     const [imageSize, setImageSize] = useState(null);
+    const { setMapLoaded } = useEncounterContext();
 
     useEffect(() => {
+
         const fetchMap = async () => {
             try {
-                console.log(mapId);
+
                 const response = await fetch(`http://127.0.0.1:3000/map/get?id=${mapId}`, {
                     method: "GET",
                     headers: {
@@ -31,6 +34,7 @@ const Map = ({ mapId }) => {
                     img.src = data.backgroundImage;
                     img.onload = () => {
                         setImageSize({ width: img.width, height: img.height });
+                        setMapLoaded(true);
                     };
 
 

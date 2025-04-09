@@ -2,7 +2,10 @@ import React, { createContext, useContext, useState } from 'react';
 
 const EncounterContext = createContext();
 
-export const EncounterProvider = ({ children }) => {
+export const EncounterProvider = ({ children, id }) => {
+
+    const [encounterId, setEncounterId] = useState(id);
+
     const [controllerState, setControllerState] = useState({
         selectedEntity: null,
         isMoving: false,
@@ -18,7 +21,7 @@ export const EncounterProvider = ({ children }) => {
     })
 
     return (
-        <EncounterContext.Provider value={{ controllerState, setControllerState, mapState, setMapState, currentZoom, setCurrentZoom, mapLoaded, setMapLoaded }}>
+        <EncounterContext.Provider value={{ controllerState, setControllerState, mapState, setMapState, currentZoom, setCurrentZoom, mapLoaded, setMapLoaded, encounterId, setEncounterId }}>
             {children}
         </EncounterContext.Provider>
     );

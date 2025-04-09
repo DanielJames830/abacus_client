@@ -4,7 +4,7 @@ const config = {
         currentZoom: 1,
         tileSize: 0,
         showGrid: true,
-        snapToGrid: true,
+        snapToGrid: false,
     },
 
     controlState: {

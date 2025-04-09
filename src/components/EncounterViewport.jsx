@@ -14,7 +14,7 @@ const EncounterViewport = ({ }) => {
 
     const [entities, setEntities] = useState([]);
 
-    const { controllerState, setControllerState, mapLoaded } = useEncounterContext();
+    const { controllerState, setControllerState, mapLoaded, encounterId } = useEncounterContext();
 
     const onWheel = (e) => {
         e.preventDefault();
@@ -72,7 +72,7 @@ const EncounterViewport = ({ }) => {
     useEffect(() => {
         const fetchEncounter = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:3000/encounter/get?id=5cc300f2-d30a-4e93-93c2-ea4afad98ca3', {
+                const response = await fetch('http://127.0.0.1:3000/encounter/get?id=' + encounterId, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

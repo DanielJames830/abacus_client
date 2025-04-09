@@ -13,6 +13,8 @@ function App() {
     return { width, height };
   };
 
+  const encounterId = "5cc300f2-d30a-4e93-93c2-ea4afad98ca3";
+
   const [canvasSize, setCanvasSize] = useState(calculateCanvasSize);
 
   const [showGrid, setShowGrid] = useState(config.mapState.showGrid);
@@ -44,7 +46,7 @@ function App() {
         backgroundColor:
           "#03191E"
       }}>
-        <EncounterProvider >
+        <EncounterProvider id={encounterId}>
           <EncounterViewport />
         </EncounterProvider>
       </Stage>

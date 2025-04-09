@@ -4,13 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import '@pixi/events';
 import config from "../config";
 import { useEncounterContext } from '../encounter-context';
+import { updateEntity } from '../helpers/entityController';
 
 
 const Token = ({ entity }) => {
     const [position, setPosition] = useState({ x: entity.x * config.mapState.tileSize, y: entity.y * config.mapState.tileSize });
     const dragging = useRef(false);
     const dragStart = useRef({ x: 0, y: 0 });
-    const { controllerState, setControllerState } = useEncounterContext();
+    const { controllerState, setControllerState, encounterId } = useEncounterContext();
     const [isLoaded, setIsLoaded] = useState(false);
 
     const onPointerDown = (e) => {
@@ -48,18 +49,31 @@ const Token = ({ entity }) => {
         };
     }
 
-    const onPointerUp = () => {
+    const onPointerUp = async () => {
 
         setControllerState(prev => ({ ...prev, isMoving: false }));
         dragging.current = false;
 
+
+        let newPos = position;
         if (config.mapState.snapToGrid) {
-            setPosition(prev => ({
-                x: Math.round(prev.x / config.mapState.tileSize) * config.mapState.tileSize,
-                y: Math.round(prev.y / config.mapState.tileSize) * config.mapState.tileSize,
-            }));
+            newPos = {
+                x: Math.round(position.x / config.mapState.tileSize) * config.mapState.tileSize,
+                y: Math.round(position.y / config.mapState.tileSize) * config.mapState.tileSize,
+            };
+            await setPosition(newPos);
         }
+
+        await updateEntity(
+            encounterId,
+            entity.id,
+            {
+                x: newPos.x / config.mapState.tileSize,
+                y: (newPos.y) / config.mapState.tileSize
+            }
+        );
     };
+
 
     useEffect(() => {
         setIsLoaded(true);

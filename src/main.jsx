@@ -5,7 +5,5 @@ import App from './App.jsx'
 import { EncounterProvider, useEncounterContext } from './encounter-context.jsx'
 
 createRoot(document.getElementById('root')).render(
-
   <App />
-
 )
